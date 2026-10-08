@@ -1,0 +1,498 @@
+/* style.css -- birth chart form and report */
+
+:root {
+  --ink: #1c1a17;
+  --ink-soft: #55504a;
+  --ink-faint: #8a837b;
+  --paper: #fbf9f5;
+  --card: #ffffff;
+  --line: #ddd6ca;
+  --line-strong: #b8ae9d;
+  --accent: #8c3b1e;
+  --accent-soft: #f3e7e0;
+  --gold: #9a7b2f;
+  --flag: #fff4e2;
+  --flag-line: #e0b877;
+  --radius: 8px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 0 4rem;
+  background: var(--paper);
+  color: var(--ink);
+  font: 15px/1.55 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+}
+
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 1.25rem; }
+
+/* ---------- header ---------- */
+
+header.masthead {
+  border-bottom: 2px solid var(--line-strong);
+  background: var(--card);
+  padding: 1.6rem 0 1.2rem;
+  margin-bottom: 1.5rem;
+}
+header.masthead h1 {
+  margin: 0 0 .35rem;
+  font-size: 1.9rem;
+  letter-spacing: -.01em;
+  font-weight: 600;
+}
+header.masthead h1 .mark { color: var(--accent); }
+header.masthead p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: .95rem;
+}
+header.masthead p.tagline {
+  font-size: 1.02rem;
+  color: var(--ink);
+  margin-bottom: .45rem;
+  max-width: 46rem;
+}
+
+/* ---------- disclaimer ---------- */
+
+.disclaimer {
+  border: 1px solid var(--flag-line);
+  background: var(--flag);
+  border-radius: var(--radius);
+  padding: .8rem 1rem;
+  font-size: .88rem;
+  color: #5f4a26;
+  margin: 0 0 1.5rem;
+}
+.disclaimer strong { color: #4a3a1c; }
+
+/* ---------- form ---------- */
+
+form.birth {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.35rem 1.4rem;
+  margin-bottom: 1.75rem;
+}
+form.birth h2 {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: .9rem 1.1rem;
+}
+.field { display: flex; flex-direction: column; }
+.field label {
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--ink-faint);
+  margin-bottom: .3rem;
+  font-weight: 600;
+}
+.field input, .field select {
+  font: inherit;
+  font-size: .95rem;
+  padding: .45rem .55rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--ink);
+}
+.field input:focus, .field select:focus {
+  outline: 2px solid var(--accent-soft);
+  border-color: var(--accent);
+}
+.field .hint { font-size: .74rem; color: var(--ink-faint); margin-top: .25rem; }
+
+.actions {
+  margin-top: 1.15rem;
+  display: flex;
+  gap: .7rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+button {
+  font: inherit;
+  font-size: .95rem;
+  padding: .5rem 1.15rem;
+  border-radius: 5px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+button:hover { background: #74301a; }
+button.ghost {
+  background: #fff;
+  color: var(--accent);
+}
+button.ghost:hover { background: var(--accent-soft); }
+
+.error {
+  margin-top: .9rem;
+  padding: .6rem .8rem;
+  border: 1px solid #c98b7c;
+  background: #fbeeea;
+  border-radius: 5px;
+  color: #7d2b16;
+  font-size: .9rem;
+}
+.error:empty { display: none; }
+
+/* ---------- report sections ---------- */
+
+section { margin-bottom: 2rem; }
+section > h2 {
+  font-size: 1.15rem;
+  margin: 0 0 .2rem;
+  padding-bottom: .35rem;
+  border-bottom: 1px solid var(--line-strong);
+}
+section > p.note {
+  margin: .5rem 0 1rem;
+  font-size: .87rem;
+  color: var(--ink-soft);
+}
+
+/* ---------- summary cards ---------- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: .8rem;
+  margin-top: 1rem;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+  padding: .7rem .85rem;
+}
+.card .k {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--ink-faint);
+  font-weight: 600;
+}
+.card .v { font-size: 1.15rem; margin-top: .15rem; }
+.card .s { font-size: .82rem; color: var(--ink-soft); margin-top: .1rem; }
+
+/* ---------- charts ---------- */
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: 1.4rem;
+  margin-top: 1rem;
+}
+.chartbox {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem;
+  text-align: center;
+}
+.chartbox h3 {
+  margin: 0 0 .15rem;
+  font-size: 1rem;
+  letter-spacing: .02em;
+}
+.chartbox .sub {
+  font-size: .8rem;
+  color: var(--ink-faint);
+  margin-bottom: .7rem;
+}
+.chartbox svg { max-width: 100%; height: auto; }
+
+svg .frame { fill: none; stroke: var(--line-strong); stroke-width: 1.6; }
+svg .divider { fill: none; stroke: var(--line); stroke-width: 1; }
+svg .signlabel {
+  font: 600 10px/1 ui-sans-serif, system-ui, sans-serif;
+  fill: var(--ink-faint);
+  letter-spacing: .04em;
+}
+svg .housenum {
+  font: 600 9px/1 ui-sans-serif, system-ui, sans-serif;
+  fill: var(--gold);
+}
+svg .planet {
+  font: 600 11px/1 ui-sans-serif, system-ui, sans-serif;
+  fill: var(--ink);
+}
+svg .planet.retro { fill: var(--accent); }
+svg .lagna { font: 700 11px/1 ui-sans-serif, system-ui, sans-serif; fill: var(--accent); }
+svg .lagnaMark { fill: var(--accent-soft); stroke: none; }
+
+/* ---------- tables ---------- */
+
+.tablewrap { overflow-x: auto; margin-top: 1rem; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  font-size: .88rem;
+}
+caption {
+  caption-side: top;
+  text-align: left;
+  font-size: .85rem;
+  color: var(--ink-soft);
+  padding: 0 0 .45rem;
+}
+th, td {
+  text-align: left;
+  padding: .4rem .6rem;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+th {
+  font: 600 .74rem/1.3 ui-sans-serif, system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--ink-faint);
+  border-bottom: 1px solid var(--line-strong);
+  background: #f7f4ee;
+  position: sticky;
+  top: 0;
+}
+td.num { font-variant-numeric: tabular-nums; }
+td.wrap-ok { white-space: normal; }
+
+/* The 101-row timeline is the widest table here. Constrain its two prose
+   columns so the last one is not pushed off the right edge, and tighten the
+   rows so a century still scans. */
+table.timeline { font-size: .82rem; table-layout: fixed; width: 100%; }
+table.timeline th, table.timeline td { padding: .3rem .45rem; }
+table.timeline th:nth-child(1), table.timeline td:nth-child(1) { width: 3rem; }
+table.timeline th:nth-child(2), table.timeline td:nth-child(2) { width: 6.6rem; }
+table.timeline th:nth-child(3), table.timeline td:nth-child(3) { width: 11rem; white-space: normal; }
+table.timeline th:nth-child(4), table.timeline td:nth-child(4) { width: 7.5rem; }
+table.timeline th:nth-child(5), table.timeline td:nth-child(5) { width: 6.5rem; }
+table.timeline th:nth-child(6), table.timeline td:nth-child(6),
+table.timeline th:nth-child(7), table.timeline td:nth-child(7) { width: 7.6rem; }
+table.timeline th:nth-child(8), table.timeline td:nth-child(8) { width: 9rem; }
+table.timeline th:nth-child(9), table.timeline td:nth-child(9) { width: 24rem; }
+table.timeline th:nth-child(10), table.timeline td:nth-child(10) { width: 13.5rem; }
+table.timeline th:nth-child(11), table.timeline td:nth-child(11) { width: 16.5rem; }
+table.timeline td { vertical-align: top; }
+
+/* The reading column: gist visible, full paragraph on click. */
+td.reading summary {
+  cursor: pointer;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+td.reading summary::marker { color: var(--accent); }
+td.reading details[open] summary { margin-bottom: .4rem; font-style: normal; }
+td.reading p { margin: 0; line-height: 1.5; }
+
+/* Gemstone and remedy cells. */
+td.gems .gem { margin-bottom: .5rem; }
+td.gems .gem:last-child { margin-bottom: 0; }
+td.gems .sub, td.rems .sub {
+  display: block;
+  font-size: .92em;
+  color: var(--ink-faint);
+}
+td.gems .warn {
+  display: block;
+  font-size: .92em;
+  color: var(--accent);
+}
+td.rems .rem { margin-bottom: .5rem; }
+td.rems .rem:last-child { margin-bottom: 0; }
+td.rems ul { margin: .15rem 0 0; padding-left: 1.1rem; }
+td.rems li { margin: .1rem 0; }
+
+/* The timeline carries eleven columns, three of them prose, so it is much wider
+   than the reading column the rest of the page uses. Break it out of the
+   centred wrapper to the full viewport; .tablewrap still scrolls horizontally on
+   narrow screens as a fallback. Prose stays at a readable width. */
+section.wide {
+  width: 96vw;
+  max-width: 96vw;
+  margin-left: calc(50% - 48vw);
+  margin-right: calc(50% - 48vw);
+}
+section.wide > h2, section.wide > p.note,
+section.wide > .disclaimer, section.wide > .actions { max-width: 1140px; }
+
+/* ---------- chat ---------- */
+
+.chat {
+  margin-top: 1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.chatlog {
+  max-height: 26rem;
+  overflow-y: auto;
+  padding: 1rem 1.1rem;
+}
+.msg { display: flex; gap: .7rem; margin-bottom: 1rem; }
+.msg:last-child { margin-bottom: 0; }
+.msg .tag {
+  flex: 0 0 3.4rem;
+  font: 600 .68rem/1.6 ui-sans-serif, system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--ink-faint);
+  padding-top: .15rem;
+}
+.msg.you .tag { color: var(--accent); }
+.msg .body { flex: 1 1 auto; min-width: 0; font-size: .92rem; }
+.msg .body p { margin: 0 0 .5rem; }
+.msg .body p:last-child { margin-bottom: 0; }
+.msg .body ul { margin: .2rem 0 .6rem; padding-left: 1.2rem; }
+.msg .body li { margin: .18rem 0; }
+.msg.you .body {
+  background: var(--accent-soft);
+  border-radius: 6px;
+  padding: .45rem .7rem;
+}
+.msg.bot .body { border-left: 2px solid var(--line); padding-left: .8rem; }
+
+.chatbar {
+  display: flex;
+  gap: .5rem;
+  padding: .7rem .8rem;
+  border-top: 1px solid var(--line);
+  background: #f7f4ee;
+}
+.chatbar input {
+  flex: 1 1 auto;
+  font: inherit;
+  font-size: .93rem;
+  padding: .45rem .6rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  background: #fff;
+}
+.chatbar input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  padding: 0 .8rem .8rem;
+  background: #f7f4ee;
+}
+button.chip {
+  font: 500 .78rem/1 ui-sans-serif, system-ui, sans-serif;
+  padding: .32rem .6rem;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: #fff;
+  color: var(--ink-soft);
+}
+button.chip:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+tbody tr:hover { background: #faf7f1; }
+tr.flagged { background: var(--flag); }
+tr.flagged:hover { background: #fdedd6; }
+tr.now { outline: 2px solid var(--accent); outline-offset: -2px; }
+.retro { color: var(--accent); font-weight: 600; }
+.vargottama { color: var(--gold); font-weight: 600; }
+
+/* ---------- dasha tree ---------- */
+
+.dasha { margin-top: 1rem; }
+details.maha {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: .45rem;
+  padding: .5rem .75rem;
+}
+details.maha > summary {
+  cursor: pointer;
+  font-size: .95rem;
+  display: flex;
+  gap: .75rem;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+details.maha > summary .lord { font-weight: 700; min-width: 5.5rem; }
+details.maha > summary .span { color: var(--ink-soft); font-size: .85rem; }
+details.maha[open] { border-color: var(--line-strong); }
+details.maha .subs {
+  margin: .6rem 0 .2rem;
+  padding-left: .5rem;
+  border-left: 2px solid var(--line);
+}
+.subrow {
+  display: flex;
+  gap: .75rem;
+  font-size: .85rem;
+  padding: .18rem 0;
+  color: var(--ink-soft);
+}
+.subrow .lord { min-width: 5.5rem; color: var(--ink); font-weight: 600; }
+.badge {
+  font: 600 .68rem/1 ui-sans-serif, system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: .18rem .4rem;
+  border-radius: 3px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ---------- footer ---------- */
+
+footer.colophon {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line-strong);
+  font-size: .82rem;
+  color: var(--ink-faint);
+}
+footer.colophon p { margin: .35rem 0; }
+footer.colophon p.brandline {
+  color: var(--ink-soft);
+  font-size: .88rem;
+  padding-bottom: .5rem;
+  margin-bottom: .6rem;
+  border-bottom: 1px solid var(--line);
+}
+footer.colophon p.brandline strong { color: var(--accent); }
+
+.hidden { display: none !important; }
+
+/* ---------- print ---------- */
+
+@media print {
+  body { background: #fff; padding: 0; }
+  form.birth, .actions, .noprint, #chatSection { display: none !important; }
+  /* Brand the printed report, and keep the tagline off it -- a PDF someone
+     keeps should carry the source, not the sales line. */
+  header.masthead p.tagline { display: none; }
+  header.masthead h1::after {
+    content: " \2014 honestkundli.com";
+    font-size: .6em;
+    font-weight: 400;
+    color: #555;
+  }
+  /* Print every reading in full -- a printed report should not hide content
+     behind a disclosure widget. */
+  td.reading details > p { display: block !important; }
+  td.reading summary { display: none; }
+  header.masthead { border-bottom: 1px solid #000; }
+  section { break-inside: avoid; }
+  .chartbox { break-inside: avoid; }
+  th { position: static; }
+  tr.flagged { background: #f2f2f2 !important; }
+}

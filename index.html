@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HonestKundli -- Rashi, Navamsa and a 100-Year Timeline</title>
+<meta name="description" content="A birth chart calculated from real astronomy,
+  honest about where calculation ends and tradition begins. Rashi (D-1), Navamsa
+  (D-9), Vimshottari dasha and a year-by-year timeline. Runs entirely in your
+  browser.">
+<!-- Inline SVG favicon: a nine-pointed star for the nine grahas. Inline so the
+     page stays a self-contained set of files with no binary assets. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%238c3b1e'/%3E%3Cg stroke='%23fbf9f5' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M16 4v24M4 16h24M7.5 7.5l17 17M24.5 7.5l-17 17'/%3E%3C/g%3E%3Ccircle cx='16' cy='16' r='3.4' fill='%23fbf9f5'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <h1>Honest<span class="mark">Kundli</span></h1>
+    <p class="tagline">A birth chart from real astronomy &mdash; and a straight
+      answer about where the calculation ends and the tradition begins.</p>
+    <p>Rashi (D-1), Navamsa (D-9), Vimshottari dasha and a year-by-year timeline
+       from birth to age 100. Runs entirely in your browser &mdash; nothing is
+       uploaded.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="disclaimer">
+    <strong>Read this first.</strong>
+    The astronomy here is real and verified: planetary positions agree with NASA
+    JPL's Horizons ephemeris to within a fraction of an arcminute for most bodies.
+    The step from a planet's position to a claim about a person is a different
+    matter. Astrology has no demonstrated predictive validity in controlled
+    testing. The year-by-year section below computes the traditional
+    <em>framework</em> -- dasha periods, solar returns, Muntha, transits -- and
+    labels each with the meanings classical texts assign to it. Those labels are
+    tradition, not forecasts, and nothing here should inform a decision about
+    health, money, relationships or anything else that matters.
+  </div>
+
+  <form class="birth" id="form" autocomplete="off">
+    <h2>Birth details</h2>
+    <div class="grid">
+      <div class="field">
+        <label for="name">Name <span style="text-transform:none">(optional)</span></label>
+        <input type="text" id="name" placeholder="For the heading only">
+      </div>
+      <div class="field">
+        <label for="date">Date of birth</label>
+        <input type="date" id="date" required min="1800-01-01" max="2100-12-31">
+      </div>
+      <div class="field">
+        <label for="time">Time of birth (local clock)</label>
+        <input type="time" id="time" step="60" required value="12:00">
+        <span class="hint">24-hour. Accuracy matters: 4 min moves the Ascendant 1&deg;.</span>
+      </div>
+      <div class="field">
+        <label for="city">Place of birth</label>
+        <input type="text" id="city" list="citylist" placeholder="Start typing, e.g. Pune">
+        <datalist id="citylist"></datalist>
+        <span class="hint">Or enter coordinates directly below.</span>
+      </div>
+      <div class="field">
+        <label for="lat">Latitude (&deg;N)</label>
+        <input type="number" id="lat" step="0.0001" min="-90" max="90" placeholder="28.6139">
+      </div>
+      <div class="field">
+        <label for="lon">Longitude (&deg;E)</label>
+        <input type="number" id="lon" step="0.0001" min="-180" max="180" placeholder="77.2090">
+        <span class="hint">West is negative.</span>
+      </div>
+      <div class="field">
+        <label for="tz">Timezone</label>
+        <input type="text" id="tz" list="tzlist" placeholder="Asia/Kolkata">
+        <datalist id="tzlist"></datalist>
+        <span class="hint">IANA name preferred &mdash; it applies the rules in force
+          on the birth date.</span>
+      </div>
+      <div class="field">
+        <label for="ayanamsa">Ayanamsa</label>
+        <select id="ayanamsa">
+          <option value="lahiri" selected>Lahiri (Chitrapaksha)</option>
+          <option value="raman">B. V. Raman</option>
+          <option value="kp">Krishnamurti (KP)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="style">Chart style</label>
+        <select id="style">
+          <option value="north" selected>North Indian (houses fixed)</option>
+          <option value="south">South Indian (signs fixed)</option>
+        </select>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="submit">Calculate chart</button>
+      <button type="button" class="ghost" id="btnNow">Use current moment</button>
+      <button type="button" class="ghost" id="btnPrint">Print / Save as PDF</button>
+    </div>
+    <div class="error" id="error"></div>
+  </form>
+
+  <div id="report" class="hidden"></div>
+
+  <footer class="colophon">
+    <p class="brandline"><strong>HonestKundli</strong> &middot; honestkundli.com
+      &mdash; the name is the promise: the numbers are checked, and the readings
+      are labelled as tradition rather than sold as prophecy.</p>
+    <p><strong>Method.</strong> Sun, Moon, nutation, sidereal time and obliquity
+      from Meeus, <em>Astronomical Algorithms</em> (2nd ed.). Planets from
+      Standish/JPL Keplerian elements (1800&ndash;2050 fit) with general
+      precession applied to give longitudes of date. Sidereal positions use the
+      selected ayanamsa; Rahu and Ketu are the mean nodes, as published
+      panchangams use.</p>
+    <p><strong>Accuracy</strong> (worst case vs JPL Horizons, 1930&ndash;2040, in
+      arcminutes): Moon 0.13, Sun 0.41, Venus 0.49, Pluto 0.65, Mercury 0.74,
+      Mars 0.79, Neptune 0.89, Uranus 1.64, Jupiter 6.03, Saturn 9.71. A
+      nakshatra pada is 200 arcminutes wide, so even Saturn's error is under 5% of
+      the narrowest unit shown. Where a body sits close enough to a boundary for
+      that error to matter, it is listed under "Close calls".</p>
+  </footer>
+
+</div>
+
+<script src="cities.js"></script>
+<script src="astro-engine.js"></script>
+<script src="interpret.js"></script>
+<script>
+'use strict';
+
+var A = Astro;
+var $ = function (id) { return document.getElementById(id); };
+
+var BODY_ABBR = {
+  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve',
+  Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke', Uranus: 'Ur', Neptune: 'Ne', Pluto: 'Pl'
+};
+var SIGN_ABBR = ['Ar','Ta','Ge','Cn','Le','Vi','Li','Sc','Sg','Cp','Aq','Pi'];
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+  });
+}
+
+// --------------------------------------------------------------------------
+// Form setup
+// --------------------------------------------------------------------------
+
+(function populateCities() {
+  var dl = $('citylist');
+  CITY_NAMES.forEach(function (key) {
+    var o = document.createElement('option');
+    o.value = cityLabel(key);
+    dl.appendChild(o);
+  });
+})();
+
+(function populateZones() {
+  var dl = $('tzlist');
+  var zones = [];
+  try {
+    if (typeof Intl.supportedValuesOf === 'function') {
+      zones = Intl.supportedValuesOf('timeZone');
+    }
+  } catch (e) { zones = []; }
+  if (!zones.length) {
+    zones = ['Asia/Kolkata','Asia/Dubai','Asia/Singapore','Asia/Tokyo',
+             'Europe/London','Europe/Paris','America/New_York',
+             'America/Los_Angeles','Australia/Sydney','UTC'];
+  }
+  zones.forEach(function (z) {
+    var o = document.createElement('option');
+    o.value = z;
+    dl.appendChild(o);
+  });
+})();
+
+/* Filling in a known city fills coordinates and zone, but leaves them editable
+   so an exact birthplace can override the city centre. */
+$('city').addEventListener('change', function () {
+  var key = this.value.trim().toLowerCase();
+  var hit = CITIES[key];
+  if (!hit) {
+    var matches = CITY_NAMES.filter(function (n) { return n.indexOf(key) === 0; });
+    if (matches.length === 1) { hit = CITIES[matches[0]]; key = matches[0]; }
+  }
+  if (hit) {
+    $('lat').value = hit[0];
+    $('lon').value = hit[1];
+    $('tz').value = hit[2];
+    this.value = cityLabel(key);
+  }
+});
+
+$('btnNow').addEventListener('click', function () {
+  var now = new Date();
+  var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+  $('date').value = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' +
+                    pad(now.getDate());
+  $('time').value = pad(now.getHours()) + ':' + pad(now.getMinutes());
+  if (!$('tz').value) {
+    try { $('tz').value = Intl.DateTimeFormat().resolvedOptions().timeZone; }
+    catch (e) { /* leave blank */ }
+  }
+  if (!$('lat').value) {
+    $('city').value = 'New Delhi';
+    $('city').dispatchEvent(new Event('change'));
+  }
+});
+
+$('btnPrint').addEventListener('click', function () { window.print(); });
+
+// --------------------------------------------------------------------------
+// SVG chart rendering
+// --------------------------------------------------------------------------
+
+/* House centroids for the North Indian diamond, as fractions of the side.
+   Derived from the standard construction: outer square, both diagonals, and the
+   rhombus joining the four side midpoints. That yields 12 regions -- four
+   diamonds pointing at the side midpoints (houses 1, 4, 7, 10) and eight corner
+   triangles, with houses running anticlockwise from the top. */
+var NORTH_CENTROIDS = [
+  [0.500, 0.250], [0.250, 0.090], [0.090, 0.250], [0.250, 0.500],
+  [0.090, 0.750], [0.250, 0.910], [0.500, 0.750], [0.750, 0.910],
+  [0.910, 0.750], [0.750, 0.500], [0.910, 0.250], [0.750, 0.090]
+];
+
+/* Sign positions in the South Indian square: fixed 4x4 grid, Aries top-left-ish,
+   running clockwise. Values are [row, col] for sign index 0..11. */
+var SOUTH_GRID = {
+  0:[0,1], 1:[0,2], 2:[0,3], 3:[1,3], 4:[2,3], 5:[3,3],
+  6:[3,2], 7:[3,1], 8:[3,0], 9:[2,0], 10:[1,0], 11:[0,0]
+};
+
+function occupantsBySign(chart, key) {
+  var out = {};
+  for (var i = 0; i < 12; i++) out[i] = [];
+  A.VEDIC_BODIES.forEach(function (body) {
+    var d = chart.positions[body];
+    if (!d) return;
+    out[A.signIndex(d[key])].push({
+      label: BODY_ABBR[body] + (d.retrograde ? 'R' : ''),
+      retro: d.retrograde,
+      deg: Math.floor(A.degreesInSign(d[key]))
+    });
+  });
+  return out;
+}
+
+function svgEl(tag, attrs) {
+  var e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+  return e;
+}
+
+function drawNorth(chart, key) {
+  var S = 440, pad = 14, size = S - pad * 2;
+  var svg = svgEl('svg', { viewBox: '0 0 ' + S + ' ' + S,
+                           width: S, height: S,
+                           role: 'img' });
+  var x0 = pad, y0 = pad, s = size;
+  var mid = s / 2;
+
+  var ascSign = A.signIndex(chart.ascendant[key]);
+  var occ = occupantsBySign(chart, key);
+
+  // Shade house 1 so the lagna reads at a glance.
+  var h1 = NORTH_CENTROIDS[0];
+  svg.appendChild(svgEl('polygon', {
+    'class': 'lagnaMark',
+    points: [
+      [x0 + mid, y0].join(','),
+      [x0 + mid * 1.5, y0 + mid * 0.5].join(','),
+      [x0 + mid, y0 + mid].join(','),
+      [x0 + mid * 0.5, y0 + mid * 0.5].join(',')
+    ].join(' ')
+  }));
+
+  svg.appendChild(svgEl('rect', { 'class': 'frame', x: x0, y: y0,
+                                  width: s, height: s }));
+  var lines = [
+    [x0, y0, x0 + s, y0 + s], [x0 + s, y0, x0, y0 + s],
+    [x0 + mid, y0, x0 + s, y0 + mid], [x0 + s, y0 + mid, x0 + mid, y0 + s],
+    [x0 + mid, y0 + s, x0, y0 + mid], [x0, y0 + mid, x0 + mid, y0]
+  ];
+  lines.forEach(function (l) {
+    svg.appendChild(svgEl('line', { 'class': 'divider',
+                                    x1: l[0], y1: l[1], x2: l[2], y2: l[3] }));
+  });
+
+  for (var house = 1; house <= 12; house++) {
+    var sign = A.mod(ascSign + house - 1, 12);
+    var c = NORTH_CENTROIDS[house - 1];
+    var cx = x0 + c[0] * s, cy = y0 + c[1] * s;
+    var items = occ[sign];
+    var lineH = 12;
+    var total = 1 + Math.ceil(items.length / 3);
+    var top = cy - ((total - 1) * lineH) / 2;
+
+    var label = svgEl('text', { 'class': 'signlabel', x: cx, y: top,
+                                'text-anchor': 'middle' });
+    label.textContent = (sign + 1) + ' ' + SIGN_ABBR[sign];
+    svg.appendChild(label);
+
+    for (var row = 0; row * 3 < items.length; row++) {
+      var chunk = items.slice(row * 3, row * 3 + 3);
+      var t = svgEl('text', { x: cx, y: top + (row + 1) * lineH,
+                              'text-anchor': 'middle',
+                              'class': 'planet' });
+      chunk.forEach(function (it, i) {
+        var span = svgEl('tspan', { 'class': it.retro ? 'planet retro' : 'planet' });
+        span.textContent = (i ? '  ' : '') + it.label;
+        t.appendChild(span);
+      });
+      svg.appendChild(t);
+    }
+    if (house === 1) {
+      var la = svgEl('text', { 'class': 'lagna', x: cx, y: top - 11,
+                               'text-anchor': 'middle' });
+      la.textContent = 'Asc';
+      svg.appendChild(la);
+    }
+  }
+  return svg;
+}
+
+function drawSouth(chart, key) {
+  var S = 440, pad = 14, size = S - pad * 2, cell = size / 4;
+  var svg = svgEl('svg', { viewBox: '0 0 ' + S + ' ' + S,
+                           width: S, height: S, role: 'img' });
+  var ascSign = A.signIndex(chart.ascendant[key]);
+  var occ = occupantsBySign(chart, key);
+
+  // Shade the rising sign's cell.
+  var g = SOUTH_GRID[ascSign];
+  svg.appendChild(svgEl('rect', {
+    'class': 'lagnaMark', x: pad + g[1] * cell, y: pad + g[0] * cell,
+    width: cell, height: cell
+  }));
+
+  svg.appendChild(svgEl('rect', { 'class': 'frame', x: pad, y: pad,
+                                  width: size, height: size }));
+  for (var i = 1; i < 4; i++) {
+    svg.appendChild(svgEl('line', { 'class': 'divider',
+      x1: pad + i * cell, y1: pad, x2: pad + i * cell, y2: pad + size }));
+    svg.appendChild(svgEl('line', { 'class': 'divider',
+      x1: pad, y1: pad + i * cell, x2: pad + size, y2: pad + i * cell }));
+  }
+  // Blank out the interior borders of the central 2x2 block.
+  svg.appendChild(svgEl('rect', {
+    x: pad + cell + 0.8, y: pad + cell + 0.8,
+    width: cell * 2 - 1.6, height: cell * 2 - 1.6,
+    fill: 'var(--card)', stroke: 'none'
+  }));
+
+  Object.keys(SOUTH_GRID).forEach(function (signKey) {
+    var sign = parseInt(signKey, 10);
+    var pos = SOUTH_GRID[sign];
+    var cx = pad + pos[1] * cell + cell / 2;
+    var top = pad + pos[0] * cell + 15;
+    var house = A.mod(sign - ascSign, 12) + 1;
+
+    var sl = svgEl('text', { 'class': 'signlabel', x: pad + pos[1] * cell + 6,
+                             y: top, 'text-anchor': 'start' });
+    sl.textContent = SIGN_ABBR[sign];
+    svg.appendChild(sl);
+
+    var hn = svgEl('text', { 'class': 'housenum',
+                             x: pad + (pos[1] + 1) * cell - 6, y: top,
+                             'text-anchor': 'end' });
+    hn.textContent = 'H' + house;
+    svg.appendChild(hn);
+
+    var items = occ[sign];
+    if (house === 1) {
+      items = [{ label: 'Asc', retro: false }].concat(items);
+    }
+    for (var row = 0; row * 2 < items.length; row++) {
+      var chunk = items.slice(row * 2, row * 2 + 2);
+      var t = svgEl('text', { x: cx, y: top + 18 + row * 14,
+                              'text-anchor': 'middle', 'class': 'planet' });
+      chunk.forEach(function (it, k) {
+        var span = svgEl('tspan', {
+          'class': it.label === 'Asc' ? 'lagna' : (it.retro ? 'planet retro' : 'planet')
+        });
+        span.textContent = (k ? '   ' : '') + it.label;
+        t.appendChild(span);
+      });
+      svg.appendChild(t);
+    }
+  });
+  return svg;
+}
+
+function drawChart(chart, key, style) {
+  return style === 'south' ? drawSouth(chart, key) : drawNorth(chart, key);
+}
+
+// --------------------------------------------------------------------------
+// Report rendering
+// --------------------------------------------------------------------------
+
+function card(k, v, s) {
+  return '<div class="card"><div class="k">' + esc(k) + '</div>' +
+         '<div class="v">' + esc(v) + '</div>' +
+         (s ? '<div class="s">' + esc(s) + '</div>' : '') + '</div>';
+}
+
+function summarySection(chart, name) {
+  var p = chart.positions;
+  var ascSign = A.signIndex(chart.ascendant.sidereal);
+  var moonNak = p.Moon.nakshatra;
+  var out = '<section><h2>Summary</h2><div class="cards">';
+  out += card('Lagna (rising sign)', A.SIGNS[ascSign],
+              A.SIGNS_SANSKRIT[ascSign] + ' -- ' +
+              A.formatPosition(chart.ascendant.sidereal));
+  out += card('Lagna lord', A.SIGN_LORDS[ascSign],
+              'in house ' + p[A.SIGN_LORDS[ascSign]].houseVedic);
+  out += card('Moon sign (rashi)', A.SIGNS[A.signIndex(p.Moon.sidereal)],
+              A.formatPosition(p.Moon.sidereal));
+  out += card('Janma nakshatra', moonNak.name,
+              'pada ' + moonNak.pada + ', lord ' + moonNak.lord);
+  out += card('Sun sign (rashi)', A.SIGNS[A.signIndex(p.Sun.sidereal)],
+              A.formatPosition(p.Sun.sidereal));
+  out += card('Navamsa lagna (D-9)', A.SIGNS[A.signIndex(chart.ascendant.navamsa)],
+              'from ' + A.SIGNS[ascSign] + ' rising');
+  out += card('Moon phase', chart.moonPhase,
+              Math.round(chart.moonIllumination * 100) + '% illuminated');
+  out += card('Ayanamsa', A.formatDMS(chart.ayanamsa),
+              chart.ayanamsaName === 'kp' ? 'Krishnamurti' :
+              chart.ayanamsaName.charAt(0).toUpperCase() + chart.ayanamsaName.slice(1));
+  out += '</div></section>';
+  return out;
+}
+
+function panchangSection(chart) {
+  var pa = chart.panchang;
+  var out = '<section><h2>Panchang at birth</h2><div class="cards">';
+  out += card('Tithi', pa.paksha + ' ' + pa.tithi,
+              Math.round(pa.tithiPercent) + '% elapsed (no. ' + pa.tithiNumber + ')');
+  out += card('Vara (weekday)', pa.vara, 'lord ' + pa.varaLord);
+  out += card('Nakshatra', pa.nakshatra.name, 'pada ' + pa.nakshatra.pada);
+  out += card('Yoga', pa.yoga, 'no. ' + pa.yogaNumber);
+  out += card('Karana', pa.karana, 'no. ' + pa.karanaNumber);
+  out += '</div></section>';
+  return out;
+}
+
+function chartsSection(chart, style) {
+  var out = '<section><h2>Charts</h2>';
+  out += '<p class="note">Both charts use whole-sign houses, the Vedic ' +
+         'convention. ' +
+         (style === 'south'
+           ? 'South Indian layout: sign positions are fixed and the house ' +
+             'numbers move; the shaded cell is the rising sign.'
+           : 'North Indian layout: house positions are fixed and the sign ' +
+             'numbers move; house 1 is the shaded diamond at the top.') +
+         ' Retrograde planets are marked R and shown in red.</p>';
+  out += '<div class="charts">' +
+         '<div class="chartbox"><h3>Rashi &mdash; D-1</h3>' +
+         '<div class="sub">The birth chart itself</div>' +
+         '<div id="chart-d1"></div></div>' +
+         '<div class="chartbox"><h3>Navamsa &mdash; D-9</h3>' +
+         '<div class="sub">Ninth harmonic, from the 3&deg;20\' divisions</div>' +
+         '<div id="chart-d9"></div></div>' +
+         '</div></section>';
+  return out;
+}
+
+function chatSection() {
+  return '<section id="chatSection"><h2>Ask about this chart</h2>' +
+    '<p class="note"><strong>What this is.</strong> A lookup over the chart just ' +
+    'computed on this page. It reads the actual numbers back to you and tells ' +
+    'you what the tradition attaches to them. It is <em>not</em> an AI and not a ' +
+    'fortune teller \u2014 there is no model here and nothing leaves your ' +
+    'browser. It will not put dates on life events, and it will not read health ' +
+    'or lifespan from a chart at all.</p>' +
+    '<div class="chat">' +
+    '<div class="chatlog" id="chatlog" aria-live="polite"></div>' +
+    '<div class="chatbar">' +
+    '<input type="text" id="chatInput" ' +
+    'placeholder="e.g. where is Saturn?  what dasha in 2030?  which gemstone?" ' +
+    'autocomplete="off">' +
+    '<button type="button" id="chatSend">Ask</button>' +
+    '</div>' +
+    '<div class="chips" id="chatChips"></div>' +
+    '</div></section>';
+}
+
+var CHAT_CHIPS = [
+  'What can you answer?',
+  'Where is Saturn?',
+  'What is in my 7th house?',
+  'My nakshatra',
+  'What dasha am I in now?',
+  'When is my Sade Sati?',
+  'Which gemstone?',
+  'Lal Kitab remedies',
+  'Tell me about age 45',
+  'Anything vargottama?',
+  'Career',
+  'My panchang'
+];
+
+/* Minimal markdown: **bold**, *italic*, bullet lines, and paragraph breaks.
+   Input is escaped first, so this cannot inject markup. */
+function miniMarkdown(text) {
+  var safe = esc(text);
+  var lines = safe.split('\n');
+  var html = '', inList = false;
+  lines.forEach(function (line) {
+    var isBullet = /^\s*-\s+/.test(line);
+    if (isBullet && !inList) { html += '<ul>'; inList = true; }
+    if (!isBullet && inList) { html += '</ul>'; inList = false; }
+    var body = line.replace(/^\s*-\s+/, '')
+                   .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                   .replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
+    if (isBullet) html += '<li>' + body + '</li>';
+    else if (line.trim() === '') html += '';
+    else html += '<p>' + body + '</p>';
+  });
+  if (inList) html += '</ul>';
+  return html;
+}
+
+function setupChat(chart) {
+  var log = $('chatlog');
+  var input = $('chatInput');
+
+  function bubble(who, text) {
+    var div = document.createElement('div');
+    div.className = 'msg ' + who;
+    div.innerHTML = who === 'you'
+      ? '<span class="tag">You</span><div class="body"><p>' + esc(text) + '</p></div>'
+      : '<span class="tag">Chart</span><div class="body">' +
+        miniMarkdown(text) + '</div>';
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function ask(text) {
+    if (!text.trim()) return;
+    bubble('you', text);
+    var answer;
+    try {
+      answer = Interpret.answerQuestion(chart, text);
+    } catch (e) {
+      answer = 'Something went wrong looking that up: ' + e.message;
+    }
+    bubble('bot', answer);
+    input.value = '';
+  }
+
+  $('chatSend').addEventListener('click', function () { ask(input.value); });
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); ask(input.value); }
+  });
+
+  var chips = $('chatChips');
+  CHAT_CHIPS.forEach(function (c) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.textContent = c;
+    b.addEventListener('click', function () { ask(c); });
+    chips.appendChild(b);
+  });
+
+  bubble('bot', Interpret.answerQuestion(chart, 'help'));
+}
+
+function positionsSection(chart) {
+  var out = '<section><h2>Planetary positions</h2>' +
+    '<p class="note">Sidereal (nirayana) longitudes. Speed is degrees per day; ' +
+    'negative means retrograde. A body in the same sign in D-1 and D-9 is ' +
+    '<span class="vargottama">vargottama</span>, traditionally read as ' +
+    'reinforced.</p><div class="tablewrap"><table><thead><tr>' +
+    '<th>Body</th><th>Position</th><th>Sign</th><th>House</th><th>Speed</th>' +
+    '<th>Nakshatra</th><th>Pada</th><th>D-9 sign</th><th>D-9 house</th>' +
+    '<th>Status</th></tr></thead><tbody>';
+
+  var ascSign = A.signIndex(chart.ascendant.sidereal);
+  out += '<tr><td><strong>Ascendant</strong></td><td class="num">' +
+         A.formatDMS(A.degreesInSign(chart.ascendant.sidereal)) + '</td><td>' +
+         A.SIGNS[ascSign] + '</td><td class="num">1</td><td>&mdash;</td><td>' +
+         A.nakshatraOf(chart.ascendant.sidereal).name + '</td><td class="num">' +
+         A.nakshatraOf(chart.ascendant.sidereal).pada + '</td><td>' +
+         A.SIGNS[A.signIndex(chart.ascendant.navamsa)] +
+         '</td><td class="num">1</td><td></td></tr>';
+
+  A.VEDIC_BODIES.forEach(function (body) {
+    var d = chart.positions[body];
+    var status = [];
+    if (d.retrograde) status.push('<span class="retro">Retrograde</span>');
+    if (d.dignity) status.push(esc(d.dignity));
+    if (d.vargottama) status.push('<span class="vargottama">Vargottama</span>');
+    out += '<tr><td><strong>' + body + '</strong></td>' +
+      '<td class="num">' + A.formatDMS(A.degreesInSign(d.sidereal)) + '</td>' +
+      '<td>' + A.SIGNS[A.signIndex(d.sidereal)] + '</td>' +
+      '<td class="num">' + d.houseVedic + '</td>' +
+      '<td class="num">' + (d.speed >= 0 ? '+' : '') + d.speed.toFixed(2) + '</td>' +
+      '<td>' + d.nakshatra.name + '</td>' +
+      '<td class="num">' + d.nakshatra.pada + '</td>' +
+      '<td>' + A.SIGNS[A.signIndex(d.navamsa)] + '</td>' +
+      '<td class="num">' + d.houseNavamsa + '</td>' +
+      '<td>' + status.join(', ') + '</td></tr>';
+  });
+  out += '</tbody></table></div></section>';
+  return out;
+}
+
+function housesSection(chart) {
+  var occ = {};
+  for (var i = 1; i <= 12; i++) occ[i] = [];
+  A.VEDIC_BODIES.forEach(function (body) {
+    occ[chart.positions[body].houseVedic].push(body);
+  });
+  var out = '<section><h2>The twelve houses</h2>' +
+    '<p class="note">Whole-sign houses: house 1 is the whole rising sign, and ' +
+    'each house is exactly one sign.</p><div class="tablewrap"><table><thead><tr>' +
+    '<th>House</th><th>Sign</th><th>Sanskrit</th><th>Sign lord</th>' +
+    '<th>Occupants</th><th>Traditional significations</th>' +
+    '</tr></thead><tbody>';
+  for (i = 0; i < 12; i++) {
+    var sign = A.signIndex(chart.houses.vedic[i]);
+    out += '<tr><td class="num"><strong>' + (i + 1) + '</strong></td>' +
+      '<td>' + A.SIGNS[sign] + '</td><td>' + A.SIGNS_SANSKRIT[sign] + '</td>' +
+      '<td>' + A.SIGN_LORDS[sign] + '</td>' +
+      '<td>' + (occ[i + 1].join(', ') || '&mdash;') + '</td>' +
+      '<td class="wrap-ok">' + A.HOUSE_THEMES[i] + '</td></tr>';
+  }
+  out += '</tbody></table></div></section>';
+  return out;
+}
+
+function warningsSection(chart) {
+  if (!chart.boundaryWarnings.length) return '';
+  var out = '<section><h2>Close calls</h2>' +
+    '<p class="note">These sit near a boundary, within the margin of error of ' +
+    'the calculation. The classification shown elsewhere is the best estimate ' +
+    'but is not certain.</p><div class="tablewrap"><table><thead><tr>' +
+    '<th>Body</th><th>Boundary</th><th>Distance</th><th>Uncertainty</th>' +
+    '</tr></thead><tbody>';
+  chart.boundaryWarnings.forEach(function (w) {
+    out += '<tr class="flagged"><td><strong>' + esc(w.body) + '</strong></td>' +
+      '<td>' + esc(w.boundary) + ' cusp</td>' +
+      '<td class="num">' + A.formatDMS(w.distanceDeg, false) + '</td>' +
+      '<td class="num">&plusmn; ' + A.formatDMS(w.toleranceDeg, false) + '</td></tr>';
+  });
+  out += '</tbody></table></div>';
+  if (chart.boundaryWarnings.some(function (w) { return w.body === 'Ascendant'; })) {
+    out += '<p class="note">The Ascendant moves about 1&deg; every 4 minutes, so ' +
+           'its margin is set by how precisely the birth time is known, not by ' +
+           'the ephemeris.</p>';
+  }
+  return out + '</section>';
+}
+
+function dashaSection(chart) {
+  var d = chart.dasha;
+  var nowMs = Date.now();
+  var out = '<section><h2>Vimshottari dasha</h2>' +
+    '<p class="note">The Moon sits ' +
+    (d.moonNakshatra.fraction * 100).toFixed(1) + '% of the way through ' +
+    esc(d.moonNakshatra.name) + ', so ' + A.humaniseYears(d.balanceYears) +
+    ' of the ' + esc(d.startingLord) + ' mahadasha remained at birth. ' +
+    'The full cycle runs 120 years. Click any period to open its ' +
+    'antardashas.</p><div class="dasha">';
+
+  d.periods.forEach(function (m) {
+    var isNow = m.start <= nowMs && nowMs < m.end;
+    out += '<details class="maha"' + (isNow ? ' open' : '') + '>' +
+      '<summary><span class="lord">' + esc(m.lord) + '</span>' +
+      '<span class="span">' + A.formatDate(m.start) + ' &rarr; ' +
+      A.formatDate(m.end) + ' &middot; ' + A.humaniseYears(m.years) + '</span>' +
+      (m.partial ? '<span class="badge">in progress at birth</span>' : '') +
+      (isNow ? '<span class="badge">current</span>' : '') +
+      '</summary><div class="subs">';
+    (m.sub || []).forEach(function (s) {
+      var subNow = s.start <= nowMs && nowMs < s.end;
+      out += '<div class="subrow"><span class="lord">' + esc(s.lord) + '</span>' +
+        '<span>' + A.formatDate(s.start) + ' &rarr; ' + A.formatDate(s.end) +
+        '</span><span>' + A.humaniseYears(s.years) + '</span>' +
+        (subNow ? '<span class="badge">current</span>' : '') + '</div>';
+    });
+    out += '</div></details>';
+  });
+  out += '</div></section>';
+  return out;
+}
+
+function timelineSection(chart) {
+  var nowMs = Date.now();
+  var out = '<section class="wide"><h2>Year by year, birth to age 100</h2>' +
+    '<p class="note"><strong>What this is.</strong> Each row is one ' +
+    'astrological year, running from one sidereal solar return (Varsha ' +
+    'Pravesha &mdash; the moment the Sun comes back to its exact birth ' +
+    'longitude) to the next. Every column is computed, not narrated: the ' +
+    'dasha lords in force, the Varshaphala annual ascendant, the Muntha, and ' +
+    'where Saturn and Jupiter sit relative to the birth Moon. The last column ' +
+    'gives the themes classical texts attach to those placements. ' +
+    '<strong>They are traditional attributions, not predictions</strong>, and ' +
+    'no specific event is being asserted about anyone. Rows shaded amber are ' +
+    'Sade Sati years; the outlined row is the year in progress now.</p>' +
+    '<div class="actions noprint" style="margin:0 0 .8rem">' +
+    '<label style="font-size:.85rem"><input type="checkbox" id="tlFilter"> ' +
+    'Show only years with a noted transit</label></div>' +
+    '<div class="tablewrap"><table class="timeline"><thead><tr>' +
+    '<th>Age</th><th>Year begins</th><th>Dasha</th>' +
+    '<th>Muntha</th><th>Varsha lagna</th>' +
+    '<th>Saturn <span style="font-weight:400">(h. from Moon)</span></th>' +
+    '<th>Jupiter <span style="font-weight:400">(h. from Moon)</span></th>' +
+    '<th>Noted transits</th>' +
+    '<th>Reading for the year</th>' +
+    '<th>Gemstones <span style="font-weight:400">(Vedic)</span></th>' +
+    '<th>Remedies <span style="font-weight:400">(Lal Kitab)</span></th>' +
+    '</tr></thead><tbody>';
+
+  chart.timeline.forEach(function (r) {
+    var isNow = r.startMs <= nowMs && nowMs < r.endMs;
+    var cls = [];
+    if (r.sadeSati) cls.push('flagged');
+    if (isNow) cls.push('now');
+
+    var antar = r.antardashas.map(function (a) { return a.lord; });
+    var uniqueAntar = antar.filter(function (v, i) { return antar.indexOf(v) === i; });
+
+    // Keep notes terse -- the Saturn and Jupiter columns already give the house,
+    // so repeating "Saturn in 2nd from Moon" here only cost width.
+    var notes = [];
+    if (r.sadeSati) {
+      notes.push(r.saturnHouseFromMoon === 12 ? 'Sade Sati, first phase'
+               : r.saturnHouseFromMoon === 1 ? 'Sade Sati, peak'
+               : 'Sade Sati, final phase');
+    }
+    if (r.saturnNote) notes.push(r.saturnNote.split(' (')[0]);
+    // Use the same favourable-house sets as the reading column, so the two
+    // cannot disagree about the same year.
+    if (Interpret.JUPITER_FAVOURABLE.indexOf(r.jupiterHouseFromMoon) !== -1) {
+      notes.push('Jupiter well placed');
+    }
+    if (Interpret.SATURN_FAVOURABLE.indexOf(r.saturnHouseFromMoon) !== -1) {
+      notes.push('Saturn well placed');
+    }
+    if (r.mahadashas.length > 1) notes.push('mahadasha changes');
+
+    // The detailed reading. Collapsed by default -- 101 full paragraphs open at
+    // once is unreadable -- with the gist visible and a click to expand.
+    var narrative = Interpret.yearNarrative(r, chart);
+    var gist = Interpret.yearGist(r);
+
+    var gems = Interpret.yearGemstones(r, chart).map(function (g) {
+      return '<div class="gem"><strong>' + esc(g.detail) + '</strong>' +
+        '<span class="sub">' + esc(g.planet) + ' &middot; ' + esc(g.setting) +
+        '</span>' +
+        '<span class="sub">or ' + esc(g.substitutes) + '</span>' +
+        (g.caution ? '<span class="warn">' + esc(g.caution) + '</span>' : '') +
+        '</div>';
+    }).join('');
+
+    var rem = Interpret.yearRemedies(r).map(function (g) {
+      return '<div class="rem"><strong>' + esc(g.planet) + '</strong> ' +
+        '<span class="sub">(' + esc(g.why) + ')</span><ul>' +
+        g.items.slice(0, 3).map(function (it) {
+          return '<li>' + esc(it) + '</li>';
+        }).join('') + '</ul></div>';
+    }).join('');
+
+    out += '<tr' + (cls.length ? ' class="' + cls.join(' ') + '"' : '') +
+      ' data-noted="' + (notes.length ? '1' : '0') + '">' +
+      '<td class="num"><strong>' + r.age + '</strong></td>' +
+      '<td class="num">' + A.formatDate(r.startMs) + '</td>' +
+      '<td>' + r.mahadashas.join('/') +
+      '<span style="color:var(--ink-faint)"> &rsaquo; ' +
+      uniqueAntar.join(', ') + '</span></td>' +
+      '<td>' + A.SIGNS[r.munthaSign] + ' <span style="color:var(--gold)">H' +
+      r.munthaHouse + '</span></td>' +
+      '<td>' + A.SIGNS[r.varshaLagnaSign] + '</td>' +
+      '<td>' + A.SIGNS[r.saturnSign] + ' (' + r.saturnHouseFromMoon + ')</td>' +
+      '<td>' + A.SIGNS[r.jupiterSign] + ' (' + r.jupiterHouseFromMoon + ')</td>' +
+      '<td class="wrap-ok">' + (notes.length ? esc(notes.join('; ')) : '&mdash;') +
+      '</td>' +
+      '<td class="wrap-ok reading"><details><summary>' + esc(gist) +
+      '</summary><p>' + esc(narrative) + '</p></details></td>' +
+      '<td class="wrap-ok gems">' + gems + '</td>' +
+      '<td class="wrap-ok rems">' + rem + '</td></tr>';
+  });
+  out += '</tbody></table></div>';
+  out += '<div class="actions noprint" style="margin:.8rem 0 0">' +
+    '<button type="button" class="ghost" id="tlExpand">Open all readings</button>' +
+    '<button type="button" class="ghost" id="tlCollapse">Close all</button>' +
+    '</div>';
+  out += '<div class="disclaimer" style="margin-top:1rem">' +
+    '<strong>About the last three columns.</strong> The reading describes what ' +
+    'the classical framework indicates for that year\'s configuration. It is ' +
+    'deliberately written as description, never as an event: nothing here says ' +
+    '"you will". The gemstone and Lal Kitab columns record what the tradition ' +
+    'prescribes for the ruling planets \u2014 they are not recommendations. ' +
+    'Gemstones have no demonstrated effect and cost real money; the remedies ' +
+    'listed are limited to harmless observance and charity, and none of it is a ' +
+    'substitute for medical, legal or financial advice.</div>';
+  out += '<p class="note">Saturn and Jupiter columns show the sign and, in ' +
+    'brackets, the house counted from the birth Moon &mdash; the reference ' +
+    'classical gochara uses. Sade Sati is Saturn crossing the 12th, 1st and ' +
+    '2nd from the Moon, roughly seven and a half years once every twenty-nine. ' +
+    'Muntha advances exactly one sign per year from the birth ascendant.</p>';
+  return out + '</section>';
+}
+
+function technicalSection(chart, tzLabel) {
+  var i = chart.input;
+  var rows = [
+    ['Local birth time', A.formatDateTime(i.localMs)],
+    ['Timezone', tzLabel],
+    ['Universal time', A.formatDateTime(i.utcMs) + ' UT'],
+    ['Coordinates', i.latitude.toFixed(4) + '\u00b0 N, ' +
+                    i.longitude.toFixed(4) + '\u00b0 E'],
+    ['Julian Day (UT)', chart.jdUT.toFixed(5)],
+    ['Delta T (TT - UT)', chart.deltaT.toFixed(1) + ' s'],
+    ['Local sidereal time', A.formatDMS(chart.siderealTime)],
+    ['True obliquity', A.formatDMS(chart.obliquity)],
+    ['Ayanamsa', A.formatDMS(chart.ayanamsa) + ' (' + chart.ayanamsaName + ')']
+  ];
+  var out = '<section><h2>Technical detail</h2><div class="tablewrap"><table>' +
+            '<tbody>';
+  rows.forEach(function (r) {
+    out += '<tr><th style="position:static;width:14rem">' + esc(r[0]) +
+           '</th><td class="num">' + esc(r[1]) + '</td></tr>';
+  });
+  out += '</tbody></table></div></section>';
+  return out;
+}
+
+// --------------------------------------------------------------------------
+// Orchestration
+// --------------------------------------------------------------------------
+
+function readForm() {
+  var date = $('date').value;
+  var time = $('time').value;
+  if (!date) throw new Error('Enter a date of birth.');
+  if (!time) throw new Error('Enter a time of birth. If it is unknown, use ' +
+                             '12:00 and treat the Ascendant, houses and dasha ' +
+                             'as unreliable.');
+
+  var lat = parseFloat($('lat').value);
+  var lon = parseFloat($('lon').value);
+  var tz = $('tz').value.trim();
+  var cityText = $('city').value.trim();
+
+  if (isNaN(lat) || isNaN(lon)) {
+    var hit = CITIES[cityText.toLowerCase()];
+    if (hit) { lat = hit[0]; lon = hit[1]; tz = tz || hit[2]; }
+  }
+  if (isNaN(lat) || isNaN(lon)) {
+    throw new Error('Enter a place of birth. Pick a city from the list, or type ' +
+                    'a latitude and longitude. The Ascendant, houses and dasha ' +
+                    'all depend on it.');
+  }
+  if (lat < -90 || lat > 90) throw new Error('Latitude must be between -90 and 90.');
+  if (lon < -180 || lon > 180) throw new Error('Longitude must be between -180 and 180.');
+  if (!tz) throw new Error('Enter a timezone, for example Asia/Kolkata or UTC.');
+
+  var dParts = date.split('-').map(Number);
+  var tParts = time.split(':').map(Number);
+  var naive = A.partsToMs(dParts[0], dParts[1], dParts[2],
+                          tParts[0], tParts[1] || 0, 0);
+
+  var conv;
+  try {
+    conv = A.localToUtc(naive, tz);
+  } catch (e) {
+    throw new Error('Unrecognised timezone "' + tz + '". Use an IANA name such ' +
+                    'as Asia/Kolkata, or UTC.');
+  }
+
+  var offMin = conv.offsetMinutes;
+  var sign = offMin < 0 ? '-' : '+';
+  var abs = Math.abs(offMin);
+  var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+  var tzLabel = tz + ' (UTC' + sign + pad(Math.floor(abs / 60)) + ':' +
+                pad(abs % 60) + ' on this date)';
+
+  return {
+    name: $('name').value.trim(),
+    naive: naive, utcMs: conv.utcMs, lat: lat, lon: lon, tz: tz,
+    tzLabel: tzLabel, place: cityText || null,
+    ayanamsa: $('ayanamsa').value, style: $('style').value,
+    date: date, time: time
+  };
+}
+
+function render() {
+  $('error').textContent = '';
+  var input;
+  try {
+    input = readForm();
+  } catch (e) {
+    $('error').textContent = e.message;
+    $('report').classList.add('hidden');
+    return;
+  }
+
+  var year = new Date(input.utcMs).getUTCFullYear();
+  var warn = '';
+  if (year < 1800 || year > 2100) {
+    warn = '<div class="disclaimer">The planetary elements are fitted for ' +
+           '1800&ndash;2100. For ' + year + ' they are extrapolated and ' +
+           'positions may be off by degrees.</div>';
+  }
+
+  var chart = A.buildChart({
+    utcMs: input.utcMs, localMs: input.naive,
+    latitude: input.lat, longitude: input.lon,
+    ayanamsa: input.ayanamsa, houseSystem: 'porphyry',
+    place: input.place, tzLabel: input.tzLabel, timezone: input.tz,
+    years: 100
+  });
+
+  var who = input.name ? esc(input.name) : 'Chart';
+  var where = input.place ? esc(input.place)
+                          : input.lat.toFixed(3) + ', ' + input.lon.toFixed(3);
+  var heading = '<section><h2>' + who + ' &mdash; ' +
+    A.formatDateTime(input.naive) + ', ' + where + '</h2>' +
+    '<p class="note">' + esc(input.tzLabel) + ' &middot; ' +
+    A.formatDateTime(input.utcMs) + ' UT</p></section>';
+
+  var html = warn + heading +
+    summarySection(chart, input.name) +
+    panchangSection(chart) +
+    chartsSection(chart, input.style) +
+    chatSection() +
+    positionsSection(chart) +
+    housesSection(chart) +
+    warningsSection(chart) +
+    dashaSection(chart) +
+    timelineSection(chart) +
+    technicalSection(chart, input.tzLabel);
+
+  var report = $('report');
+  report.innerHTML = html;
+  report.classList.remove('hidden');
+
+  $('chart-d1').appendChild(drawChart(chart, 'sidereal', input.style));
+  $('chart-d9').appendChild(drawChart(chart, 'navamsa', input.style));
+
+  setupChat(chart);
+
+  // 101 rows is a lot to scan; let the reader collapse to the eventful ones.
+  var filter = $('tlFilter');
+  if (filter) {
+    filter.addEventListener('change', function () {
+      var only = this.checked;
+      document.querySelectorAll('table.timeline tbody tr').forEach(function (tr) {
+        tr.style.display = (only && tr.dataset.noted === '0') ? 'none' : '';
+      });
+    });
+  }
+  var setAll = function (open) {
+    document.querySelectorAll('table.timeline details').forEach(function (d) {
+      d.open = open;
+    });
+  };
+  if ($('tlExpand')) $('tlExpand').addEventListener('click', function () { setAll(true); });
+  if ($('tlCollapse')) $('tlCollapse').addEventListener('click', function () { setAll(false); });
+
+  // Keep the chart in the URL so a result can be bookmarked or shared.
+  var q = new URLSearchParams({
+    d: input.date, t: input.time, lat: input.lat, lon: input.lon,
+    tz: input.tz, ay: input.ayanamsa, st: input.style
+  });
+  if (input.name) q.set('n', input.name);
+  if (input.place) q.set('p', input.place);
+  history.replaceState(null, '', '#' + q.toString());
+
+  report.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+$('form').addEventListener('submit', function (e) {
+  e.preventDefault();
+  render();
+});
+
+/* Restore a chart from the URL hash, so a shared link reproduces it exactly. */
+(function fromHash() {
+  if (!location.hash || location.hash.length < 2) return;
+  var q = new URLSearchParams(location.hash.slice(1));
+  if (!q.get('d')) return;
+  $('date').value = q.get('d') || '';
+  $('time').value = q.get('t') || '12:00';
+  if (q.get('lat')) $('lat').value = q.get('lat');
+  if (q.get('lon')) $('lon').value = q.get('lon');
+  if (q.get('tz')) $('tz').value = q.get('tz');
+  if (q.get('ay')) $('ayanamsa').value = q.get('ay');
+  if (q.get('st')) $('style').value = q.get('st');
+  if (q.get('n')) $('name').value = q.get('n');
+  if (q.get('p')) $('city').value = q.get('p');
+  render();
+})();
+</script>
+</body>
+</html>
